@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>6학년 정치 성향 테스트</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        #quiz-container { background: white; max-width: 600px; width: 100%; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .question { display: none; text-align: center; }
+        .question.active { display: block; }
+        h2 { color: #333; margin-bottom: 25px; font-size: 1.4rem; line-height: 1.5; }
+        .btn-container { display: flex; flex-direction: column; gap: 15px; }
+        button { padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; background: white; cursor: pointer; transition: 0.3s; font-size: 1.1rem; }
+        button:hover { background: #edf2ff; border-color: #4c6ef5; transform: translateY(-2px); }
+        #result { display: none; text-align: center; }
+        .result-title { font-size: 1.5rem; font-weight: bold; color: #4c6ef5; margin-bottom: 15px; }
+        .progress-bar { height: 8px; background: #eee; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+        .progress { height: 100%; background: #4c6ef5; width: 0%; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="progress-bar"><div class="progress" id="progress"></div></div>
+    
+    <div id="quiz">
+        </div>
+
+    <div id="result">
+        <h2>당신의 정치 성향은?</h2>
+        <div class="result-title" id="group-name"></div>
+        <p id="group-desc" style="line-height: 1.6; color: #555;"></p>
+        <button onclick="location.reload()" style="margin-top: 20px; background: #4c6ef5; color: white;">다시 하기</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "우리 반 규칙을 정할 때?", a: "선생님이 정한 규칙 지키기", b: "우리가 토론해서 직접 정하기", typeA: "order", typeB: "action" },
+        { q: "모둠 과제 보상은?", a: "기여도에 따라 차등 보상", b: "모두 똑같이 평등하게 보상", typeA: "order", typeB: "equal" },
+        { q: "급식 메뉴 선택은?", a: "다수가 좋아하는 고기 반찬", b: "소수를 위한 특별 식단 포함", typeA: "order", typeB: "equal" },
+        { q: "용돈에 대해서?", a: "내가 번 돈은 모두 내 것", b: "공동체를 위해 일부 기부하기", typeA: "liberty", typeB: "equal" },
+        { q: "교실 내 CCTV 설치?", a: "안전과 질서를 위해 찬성", b: "개인 사생활 보호를 위해 반대", typeA: "order", typeB: "liberty" },
+        { q: "학급 회장의 자격은?", a: "능력이 뛰어나 1등 만드는 리더", b: "친구들의 말을 잘 듣는 리더", typeA: "order", typeB: "action" },
+        { q: "쓰레기 문제 해결은?", a: "버린 사람을 찾아 벌금 내기", b: "다 함께 조금씩 나누어 치우기", typeA: "order", typeB: "action" },
+        { q: "예산이 생겼을 때?", a: "학교 시설을 더 좋게 고치기", b: "어려운 친구 지원금으로 쓰기", typeA: "order", typeB: "equal" },
+        { q: "좌석 배치는?", a: "원하는 자리에 선착순 앉기", b: "배려가 필요한 친구 먼저 배정", typeA: "liberty", typeB: "equal" },
+        { q: "학교의 중요한 결정은?", a: "전문가인 선생님이 결정하기", b: "학생 대표가 함께 참여하기", typeA: "order", typeB: "action" }
+    ];
+
+    let currentIdx = 0;
+    let scores = { order: 0, liberty: 0, equal: 0, action: 0 };
+
+    function renderQuestion() {
+        if (currentIdx >= questions.length) {
+            showResult();
+            return;
+        }
+        
+        const qData = questions[currentIdx];
+        const quizDiv = document.getElementById('quiz');
+        quizDiv.innerHTML = `
+            <div class="question active">
+                <h2>Q${currentIdx + 1}. ${qData.q}</h2>
+                <div class="btn-container">
+                    <button onclick="next('A')">${qData.a}</button>
+                    <button onclick="next('B')">${qData.b}</button>
+                </div>
+            </div>
+        `;
+        document.getElementById('progress').style.width = `${(currentIdx / questions.length) * 100}%`;
+    }
+
+    function next(choice) {
+        const qData = questions[currentIdx];
+        const type = choice === 'A' ? qData.typeA : qData.typeB;
+        scores[type]++;
+        currentIdx++;
+        renderQuestion();
+    }
+
+    function showResult() {
+        document.getElementById('quiz').style.display = 'none';
+        document.getElementById('progress').style.width = '100%';
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+
+        const maxType = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+        
+        const results = {
+            order: ["질서와 능력 중시형", "규칙과 공정한 경쟁을 중요하게 생각하는군요! 사회의 안정과 발전을 위해 각자의 역할을 다하는 것을 선호합니다."],
+            liberty: ["자유와 개인 권리형", "나의 사생활과 스스로 결정할 권리를 아주 소중히 여기는군요! 간섭받지 않는 자유로운 삶을 지향합니다."],
+            equal: ["평등과 나눔 중시형", "어려운 이웃과 함께 나누고 모두가 공평한 세상을 꿈꾸는군요! 경쟁보다는 배려와 복지에 관심이 많습니다."],
+            action: ["참여와 협동 중심형", "함께 대화하고 문제를 해결하는 민주적인 과정을 중요하게 생각하는군요! 소통의 힘을 믿는 스타일입니다."]
+        };
+
+        document.getElementById('group-name').innerText = results[maxType][0];
+        document.getElementById('group-desc').innerText = results[maxType][1];
+    }
+
+    renderQuestion();
+</script>
+
+</body>
+</html>
